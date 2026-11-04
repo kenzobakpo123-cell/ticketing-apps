@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Models\Kategori;
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 class EventController extends Controller
@@ -13,16 +13,19 @@ class EventController extends Controller
      * Display a listing of the resource.
      */
     public function index()
-    {   
+    {
         $events = Event::all();
+
         return view('admin.event.index', compact('events'));
     }
+
     /**
      * Show the form for creating a new resource.
      */
     public function create()
     {
         $categories = Kategori::all();
+
         return view('admin.event.create', compact('categories'));
     }
 
@@ -73,6 +76,7 @@ class EventController extends Controller
     {
         $event = Event::findOrFail($id);
         $categories = Kategori::all();
+
         return view('admin.event.edit', compact('event', 'categories'));
     }
 
@@ -81,31 +85,26 @@ class EventController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        try {
-            $event = Event::findOrFail($id);
+        $event = Event::findOrFail($id);
 
-            $validatedData = $request->validate([
-                'judul' => 'required|string|max:255',
-                'deskripsi' => 'required|string',
-                'tanggal_waktu' => 'required|date',
-                'lokasi' => 'required|string|max:255',
-                'kategori_id' => 'required|exists:kategoris,id',
-                'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            ]);
+        $validatedData = $request->validate([
+            'judul' => 'required|string|max:255',
+            'deskripsi' => 'required|string',
+            'tanggal_waktu' => 'required|date',
+            'lokasi' => 'required|string|max:255',
+            'kategori_id' => 'required|exists:kategoris,id',
+            'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ]);
 
-            // Handle file upload
-            if ($request->hasFile('gambar')) {
-                $imageName = time().'.'.$request->gambar->extension();
-                $request->gambar->move(public_path('images/events'), $imageName);
-                $validatedData['gambar'] = $imageName;
-            }
-
-            $event->update($validatedData);
-
-            return redirect()->route('admin.events.index')->with('success', 'Event berhasil diperbarui.');
-        } catch (\Exception $e) {
-            return redirect()->back()->withErrors(['error' => 'Terjadi kesalahan saat memperbarui event: ' . $e->getMessage()]);
+        if ($request->hasFile('gambar')) {
+            $imageName = time().'.'.$request->gambar->extension();
+            $request->gambar->move(public_path('images/events'), $imageName);
+            $validatedData['gambar'] = $imageName;
         }
+
+        $event->update($validatedData);
+
+        return redirect()->route('admin.events.index')->with('success', 'Event berhasil diperbarui.');
     }
 
     /**
@@ -114,6 +113,13 @@ class EventController extends Controller
     public function destroy(string $id)
     {
         $event = Event::findOrFail($id);
+
+        if ($event->orders()->exists()) {
+            return redirect()
+                ->route('admin.events.index')
+                ->withErrors(['event' => 'Event yang sudah memiliki pesanan tidak dapat dihapus agar riwayat transaksi tetap utuh.']);
+        }
+
         $event->delete();
 
         return redirect()->route('admin.events.index')->with('success', 'Event berhasil dihapus.');

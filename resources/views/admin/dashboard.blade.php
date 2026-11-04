@@ -63,7 +63,7 @@
                         <p class="text-sm font-medium text-gray-600 mb-2">Total Event</p>
                         <h3 class="text-4xl font-bold text-gray-900 mb-1">{{ $totalEvents ?? 0 }}</h3>
                         <span class="text-xs text-green-600 font-medium">
-                            <span class="inline-block mr-1">↗</span> Active
+                            <span class="inline-block mr-1">•</span> Event terdaftar
                         </span>
                     </div>
                     <div
@@ -91,7 +91,7 @@
                         <p class="text-sm font-medium text-gray-600 mb-2">Kategori</p>
                         <h3 class="text-4xl font-bold text-gray-900 mb-1">{{ $totalCategories ?? 0 }}</h3>
                         <span class="text-xs text-gray-500 font-medium">
-                            <span class="inline-block mr-1">●</span> Categories
+                            <span class="inline-block mr-1">●</span> Kategori tersedia
                         </span>
                     </div>
                     <div
@@ -118,8 +118,8 @@
                     <div>
                         <p class="text-sm font-medium text-gray-600 mb-2">Total Transaksi</p>
                         <h3 class="text-4xl font-bold text-gray-900 mb-1">{{ $totalOrders ?? 0 }}</h3>
-                        <span class="text-xs text-blue-600 font-medium">
-                            <span class="inline-block mr-1">↗</span> Completed
+                        <span class="text-xs text-amber-700 font-medium">
+                            <span class="inline-block mr-1">•</span> {{ $pendingOrders }} menunggu verifikasi
                         </span>
                     </div>
                     <div
@@ -132,6 +132,21 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <div class="mt-6 grid gap-4 md:grid-cols-2">
+            <div class="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm">
+                <p class="text-sm font-medium text-slate-500">Transaksi terkonfirmasi</p>
+                <p class="mt-2 text-2xl font-black text-slate-900">{{ $paidOrders }}</p>
+                <p class="mt-1 text-sm text-slate-500">Total pembayaran: Rp {{ number_format($paidRevenue, 0, ',', '.') }}</p>
+            </div>
+            <a href="{{ route('admin.histories.index') }}" class="flex items-center justify-between rounded-2xl border border-blue-100 bg-blue-50 p-5 text-blue-900 transition hover:bg-blue-100">
+                <div>
+                    <p class="text-sm font-semibold">Kelola pembayaran</p>
+                    <p class="mt-1 text-sm">Tinjau dan konfirmasi pesanan yang menunggu pembayaran.</p>
+                </div>
+                <span class="rounded-full bg-blue-600 px-3 py-1 text-sm font-bold text-white">{{ $pendingOrders }}</span>
+            </a>
         </div>
     </div>
 </x-layouts.admin>

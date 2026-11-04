@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="380" height="96" viewBox="0 0 380 96" fill="none">
+  <defs>
+    <linearGradient id="mark" x1="8" y1="8" x2="88" y2="88" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2563EB"/>
+      <stop offset="1" stop-color="#4F46E5"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="282" y1="22" x2="368" y2="76" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2563EB"/>
+      <stop offset="1" stop-color="#7C3AED"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="88" height="88" rx="27" fill="url(#mark)"/>
+  <path d="M29 28H65C69.4183 28 73 31.5817 73 36V40C67.4772 40 63 44.4772 63 50C63 55.5228 67.4772 60 73 60V64C73 68.4183 69.4183 72 65 72H29C24.5817 72 21 68.4183 21 64V60C26.5228 60 31 55.5228 31 50C31 44.4772 26.5228 40 21 40V36C21 31.5817 24.5817 28 29 28Z" fill="white"/>
+  <path d="M47 34V40M47 46V52M47 58V66" stroke="#4F46E5" stroke-width="3" stroke-linecap="round" stroke-dasharray="2 2"/>
+  <path d="M37 41.5C37 39.567 38.567 38 40.5 38H51.5C54.5376 38 57 40.4624 57 43.5C57 46.5376 54.5376 49 51.5 49H40.5C38.567 49 37 50.567 37 52.5C37 54.433 38.567 56 40.5 56H57" stroke="#1E3A8A" stroke-width="4" stroke-linecap="round"/>
+  <text x="110" y="60" fill="#0F172A" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="800" letter-spacing="-1.8">Beng</text>
+  <text x="211" y="60" fill="url(#accent)" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="800" letter-spacing="-1.8">Tix</text>
+  <text x="112" y="79" fill="#64748B" font-family="Arial, Helvetica, sans-serif" font-size="10" font-weight="700" letter-spacing="3.1">EVENTS MADE EASY</text>
+</svg>

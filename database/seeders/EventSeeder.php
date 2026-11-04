@@ -3,7 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\Event;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Kategori;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class EventSeeder extends Seeder
@@ -13,37 +14,40 @@ class EventSeeder extends Seeder
      */
     public function run(): void
     {
+        $admin = User::where('email', 'admin@gmail.com')->firstOrFail();
         $events = [
             [
-                'user_id' => 1,
                 'judul' => 'Konser Musik Rock',
                 'deskripsi' => 'Nikmati malam penuh energi dengan band rock terkenal.',
-                'tanggal_waktu' => '2024-08-15 19:00:00',
+                'tanggal_waktu' => now()->addDays(30)->setTime(19, 0),
                 'lokasi' => 'Stadion Utama',
-                'kategori_id' => 1,
-                'gambar' => 'konser_rock.jpg',
+                'kategori' => 'Konser',
+                'gambar' => '1769062679.jpg',
             ],
             [
-                'user_id' => 1,
                 'judul' => 'Pameran Seni Kontemporer',
                 'deskripsi' => 'Jelajahi karya seni modern dari seniman lokal dan internasional.',
-                'tanggal_waktu' => '2024-09-10 10:00:00',
+                'tanggal_waktu' => now()->addDays(45)->setTime(10, 0),
                 'lokasi' => 'Galeri Seni Kota',
-                'kategori_id' => 2,
-                'gambar' => 'pameran_seni.jpg',
+                'kategori' => 'Workshop',
+                'gambar' => '1769062860.png',
             ],
             [
-                'user_id' => 1,
                 'judul' => 'Festival Makanan Internasional',
                 'deskripsi' => 'Cicipi berbagai hidangan lezat dari seluruh dunia.',
-                'tanggal_waktu' => '2024-10-05 12:00:00',
+                'tanggal_waktu' => now()->addDays(60)->setTime(12, 0),
                 'lokasi' => 'Taman Kota',
-                'kategori_id' => 3,
-                'gambar' => 'festival_makanan.jpg',
+                'kategori' => 'Seminar',
+                'gambar' => '1769062981.jpg',
             ],
         ];
         foreach ($events as $event) {
-            Event::create($event);
+            $kategori = Kategori::where('nama', $event['kategori'])->firstOrFail();
+            unset($event['kategori']);
+            Event::updateOrCreate(
+                ['judul' => $event['judul']],
+                $event + ['user_id' => $admin->id, 'kategori_id' => $kategori->id],
+            );
         }
     }
 }

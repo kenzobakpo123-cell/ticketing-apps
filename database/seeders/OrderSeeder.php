@@ -2,52 +2,52 @@
 
 namespace Database\Seeders;
 
-use App\Models\DetailOrder;
+use App\Models\Event;
 use App\Models\Order;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\TipePembayaran;
+use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class OrderSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        $orders = [
-            [
-                'user_id' => 2,
-                'event_id' => 1,
-                'order_date' => '2024-07-01 14:30:00',
-                'total_harga' => 1500000,
-            ],
-            [
-                'user_id' => 2,
-                'event_id' => 2,
-                'order_date' => '2024-07-02 10:15:00',
-                'total_harga' => 200000,
-            ],
-        ];
-        $order_details = [
-            [
-                'order_id' => 1,
-                'tiket_id' => 1,
-                'jumlah' => 1,
-                'subtotal_harga' => 1500000,
-            ],
-            [
-                'order_id' => 2,
-                'tiket_id' => 3,
-                'jumlah' => 1,
-                'subtotal_harga' => 200000,
-            ],
-        ];
-        foreach ($orders as $order) {
-            Order::create($order);
+        $buyer = User::where('email', 'user@gmail.com')->firstOrFail();
+        $event = Event::with('tikets')->orderBy('tanggal_waktu')->firstOrFail();
+
+        if (Order::where('user_id', $buyer->id)->where('event_id', $event->id)->exists()) {
+            return;
         }
-        // Assuming you have an OrderDetail model
-        foreach ($order_details as $detail) {
-            DetailOrder::create($detail);
-        }
+
+        $ticket = $event->tikets()->orderBy('id')->firstOrFail();
+        $paymentMethod = TipePembayaran::where('is_active', true)->first();
+
+        DB::transaction(function () use ($buyer, $event, $ticket, $paymentMethod) {
+            $ticket = $event->tikets()->lockForUpdate()->findOrFail($ticket->id);
+            if ($ticket->stok < 1) {
+                throw new \RuntimeException('Tidak ada stok tiket untuk pesanan contoh.');
+            }
+
+            $subtotal = (float) $ticket->harga;
+            $order = Order::create([
+                'user_id' => $buyer->id,
+                'event_id' => $event->id,
+                'order_date' => now(),
+                'total_harga' => $subtotal,
+                'tipe_pembayaran_id' => $paymentMethod?->id,
+                'payment_method_name' => $paymentMethod?->nama,
+                'payment_instructions' => $paymentMethod?->deskripsi,
+                'status' => 'paid',
+                'paid_at' => now(),
+            ]);
+
+            $order->detailOrders()->create([
+                'tiket_id' => $ticket->id,
+                'jumlah' => 1,
+                'subtotal_harga' => $subtotal,
+            ]);
+            $ticket->decrement('stok');
+        });
     }
 }

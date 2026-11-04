@@ -1,5 +1,10 @@
 <x-layouts.admin title="Detail Event">
     <div class="container mx-auto p-10">
+        @if ($errors->any())
+            <div class="mb-5 rounded-xl border border-red-200 bg-red-50 px-5 py-3 text-sm text-red-700">
+                {{ $errors->first() }}
+            </div>
+        @endif
         @if (session('success'))
         <div class="toast toast-bottom toast-center z-50">
             <div class="alert alert-success">
@@ -84,7 +89,7 @@
                         <input type="file" name="gambar" accept="image/*" class="file-input file-input-bordered w-full"
                             disabled />
                         <label class="label">
-                            <span class="label-text-alt">Format: JPG, PNG, max 5MB</span>
+                            <span class="label-text-alt">Format: JPG, PNG, max 2MB</span>
                         </label>
                     </div>
 

@@ -6,7 +6,7 @@
         <!-- Logo Section -->
         <div class="w-full flex items-center justify-center p-6 border-b border-gray-700/50">
             <div class="relative">
-                <img src="{{ asset('assets/images/logo_bengkod.png') }}" alt="Logo" class="w-24 h-auto object-contain">
+                <img src="{{ asset('assets/images/bengtix-logo.svg') }}" alt="BengTix" class="w-40 h-auto object-contain">
                 <!-- Glow effect -->
                 <div class="absolute inset-0 bg-blue-500/10 blur-xl rounded-full is-drawer-close:hidden"></div>
             </div>

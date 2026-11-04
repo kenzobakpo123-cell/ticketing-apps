@@ -8,7 +8,9 @@
                 </svg>
             </div>
         </div>
-        <img src={{ asset("assets/images/logo_bengkod.svg") }} />
+        <a href="{{ route('home') }}" aria-label="BengTix — Beranda">
+            <img src="{{ asset('assets/images/bengtix-logo.svg') }}" alt="BengTix" class="h-12 w-auto" />
+        </a>
     </div>
     <div class="navbar-center hidden lg:flex">
         @guest <input class="input w-72" placeholder="Cari Event..." /> @endguest

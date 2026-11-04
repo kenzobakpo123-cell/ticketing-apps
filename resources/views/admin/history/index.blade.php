@@ -33,7 +33,7 @@
                     </svg>
                     <div class="text-right">
                         <p class="text-xs text-gray-400 leading-tight">Total Transaksi</p>
-                        <p class="text-sm font-semibold text-gray-700">{{ count($histories) }}</p>
+                        <p class="text-sm font-semibold text-gray-700">{{ $histories->total() }}</p>
                     </div>
                 </div>
             </div>
@@ -65,6 +65,7 @@
                             <th class="text-gray-600 font-semibold">Event</th>
                             <th class="text-gray-600 font-semibold">Tanggal Pembelian</th>
                             <th class="text-gray-600 font-semibold">Total Harga</th>
+                            <th class="text-gray-600 font-semibold">Status</th>
                             <th class="text-gray-600 font-semibold text-center">Aksi</th>
                         </tr>
                     </thead>
@@ -76,9 +77,9 @@
                                 <div class="flex items-center space-x-3">
                                     <div
                                         class="w-8 h-8 bg-gradient-to-br from-purple-400 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                                        {{ strtoupper(substr($history->user->name, 0, 1)) }}
+                                        {{ strtoupper(substr($history->user?->name ?? '?', 0, 1)) }}
                                     </div>
-                                    <span class="font-medium text-gray-800">{{ $history->user->name }}</span>
+                                    <span class="font-medium text-gray-800">{{ $history->user?->name ?? 'Pengguna dihapus' }}</span>
                                 </div>
                             </td>
                             <td>
@@ -100,6 +101,12 @@
                                     {{ number_format($history->total_harga, 0, ',', '.') }}</span>
                             </td>
                             <td>
+                                <span class="rounded-full px-3 py-1 text-xs font-semibold
+                                    {{ $history->status === 'paid' ? 'bg-emerald-100 text-emerald-700' : ($history->status === 'cancelled' ? 'bg-slate-100 text-slate-600' : 'bg-amber-100 text-amber-700') }}">
+                                    {{ ['pending' => 'Menunggu', 'paid' => 'Lunas', 'cancelled' => 'Dibatalkan'][$history->status] ?? ucfirst($history->status) }}
+                                </span>
+                            </td>
+                            <td>
                                 <div class="flex justify-center">
                                     <a href="{{ route('admin.histories.show', $history->id) }}"
                                         class="btn btn-sm bg-gradient-to-r from-purple-500 to-purple-600 text-white border-0 hover:from-purple-600 hover:to-purple-700 shadow-sm hover:shadow-md transition-all duration-300">
@@ -117,7 +124,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="6" class="text-center py-12">
+                            <td colspan="7" class="text-center py-12">
                                 <div class="flex flex-col items-center justify-center text-gray-400">
                                     <svg class="w-16 h-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -134,7 +141,9 @@
                 </table>
             </div>
 
-            <!-- Pagination atau Footer bisa ditambahkan di sini jika perlu -->
+            <div class="border-t border-gray-100 px-6 py-4">
+                {{ $histories->links() }}
+            </div>
         </div>
     </div>
 </x-layouts.admin>

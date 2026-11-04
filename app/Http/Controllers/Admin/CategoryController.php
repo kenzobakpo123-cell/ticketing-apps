@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\Kategori;
 use App\Http\Controllers\Controller;
+use App\Models\Kategori;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class CategoryController extends Controller
 {
@@ -13,16 +14,9 @@ class CategoryController extends Controller
      */
     public function index()
     {
-		$categories = Kategori::all();
-		return view('admin.category.index', compact('categories'));
-    }
+        $categories = Kategori::all();
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+        return view('admin.category.index', compact('categories'));
     }
 
     /**
@@ -31,53 +25,24 @@ class CategoryController extends Controller
     public function store(Request $request)
     {
         $payload = $request->validate([
-            'nama' => 'required|string|max:255',
+            'nama' => ['required', 'string', 'max:255', 'unique:kategoris,nama'],
         ]);
 
-        if (!isset($payload['nama'])) {
-            return redirect()->route('categories.index')->with('error', 'Nama kategori wajib diisi.');
-        }
-
-        Kategori::create([
-            'nama' => $payload['nama'],
-        ]);
+        Kategori::create($payload);
 
         return redirect()->route('admin.categories.index')->with('success', 'Kategori berhasil ditambahkan.');
-    }
-
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Kategori $category)
     {
         $payload = $request->validate([
-            'nama' => 'required|string|max:255',
+            'nama' => ['required', 'string', 'max:255', Rule::unique('kategoris', 'nama')->ignore($category)],
         ]);
 
-        if (!isset($payload['nama'])) {
-            return redirect()->route('categories.index')->with('error', 'Nama kategori wajib diisi.');
-        }
-
-        $category = Kategori::findOrFail($id);
-        $category->nama = $payload['nama'];
-        $category->save();
+        $category->update($payload);
 
         return redirect()->route('admin.categories.index')->with('success', 'Kategori berhasil diperbarui.');
     }
@@ -85,9 +50,16 @@ class CategoryController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Kategori $category)
     {
-        Kategori::destroy($id);
+        if ($category->events()->exists()) {
+            return redirect()
+                ->route('admin.categories.index')
+                ->withErrors(['category' => 'Kategori masih digunakan oleh event dan tidak dapat dihapus.']);
+        }
+
+        $category->delete();
+
         return redirect()->route('admin.categories.index')->with('success', 'Kategori berhasil dihapus.');
     }
 }

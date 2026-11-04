@@ -5,8 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Models\Order;
-use App\Models\Tiket;
-use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
@@ -18,6 +16,17 @@ class DashboardController extends Controller
         $totalEvents = Event::count();
         $totalCategories = \App\Models\Kategori::count();
         $totalOrders = Order::count();
-        return view('admin.dashboard', compact('totalEvents', 'totalCategories', 'totalOrders'));
+        $pendingOrders = Order::where('status', 'pending')->count();
+        $paidOrders = Order::where('status', 'paid')->count();
+        $paidRevenue = Order::where('status', 'paid')->sum('total_harga');
+
+        return view('admin.dashboard', compact(
+            'totalEvents',
+            'totalCategories',
+            'totalOrders',
+            'pendingOrders',
+            'paidOrders',
+            'paidRevenue',
+        ));
     }
 }

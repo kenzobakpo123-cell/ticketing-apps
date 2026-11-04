@@ -23,6 +23,12 @@
                         <div class="text-sm text-gray-500 mt-1">{{ $order->order_date->translatedFormat('d F Y, H:i') }}
                         </div>
                         <div class="text-sm mt-2">{{ $order->event?->judul ?? 'Event' }}</div>
+                        <div class="mt-3">
+                            <span class="rounded-full px-3 py-1 text-xs font-semibold
+                                {{ $order->status === 'paid' ? 'bg-emerald-100 text-emerald-700' : ($order->status === 'cancelled' ? 'bg-slate-100 text-slate-600' : 'bg-amber-100 text-amber-700') }}">
+                                {{ ['pending' => 'Menunggu pembayaran', 'paid' => 'Lunas', 'cancelled' => 'Dibatalkan'][$order->status] ?? ucfirst($order->status) }}
+                            </span>
+                        </div>
                     </div>
 
                     <div class="text-right">
@@ -35,6 +41,9 @@
             @empty
             <div class="alert alert-info">Anda belum memiliki pesanan.</div>
             @endforelse
+        </div>
+        <div class="mt-6">
+            {{ $orders->links() }}
         </div>
     </section>
 </x-layouts.app>

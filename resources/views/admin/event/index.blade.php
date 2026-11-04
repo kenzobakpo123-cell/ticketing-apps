@@ -1,4 +1,10 @@
 <x-layouts.admin title="Manajemen Event">
+    @if ($errors->any())
+        <div class="mx-auto mt-4 max-w-7xl rounded-xl border border-red-200 bg-red-50 px-5 py-3 text-sm text-red-700">
+            {{ $errors->first() }}
+        </div>
+    @endif
+
     @if (session('success'))
     <div class="toast toast-bottom toast-center z-50">
         <div class="alert alert-success shadow-lg">

@@ -17,8 +17,8 @@
           <figure>
             <img
     src="{{ $event->gambar
-        ? asset('images/events/' . $event->gambar)
-        : asset('assets/images/placeholder.jpg')
+        ? (filter_var($event->gambar, FILTER_VALIDATE_URL) ? $event->gambar : asset('images/events/' . $event->gambar))
+        : asset('images/events/1769062679.jpg')
     }}"
     alt="{{ $event->judul }}"
     class="w-full h-96 object-cover"
@@ -52,7 +52,10 @@
               <div class="card card-side shadow-sm p-4 items-center">
                 <div class="flex-1">
                   <h4 class="font-bold">{{ $tiket->tipe }}</h4>
-                  <p class="text-sm text-gray-500">Stok: <span id="stock-{{ $tiket->id }}">{{ $tiket->stok }}</span></p>
+                  <p class="text-sm text-gray-500">
+                    {{ $tiket->stok > 0 ? 'Stok tersedia:' : 'Tiket habis' }}
+                    <span id="stock-{{ $tiket->id }}">{{ $tiket->stok }}</span>
+                  </p>
                   <p class="text-sm mt-2">{{ $tiket->keterangan ?? '' }}</p>
                 </div>
 
@@ -63,11 +66,11 @@
 
                   <div class="mt-3 flex items-center justify-end gap-2">
                     <button type="button" class="btn btn-sm btn-outline" data-action="dec" data-id="{{ $tiket->id }}"
-                      aria-label="Kurangi satu">−</button>
+                      aria-label="Kurangi satu" {{ $tiket->stok < 1 ? 'disabled' : '' }}>−</button>
                     <input id="qty-{{ $tiket->id }}" type="number" min="0" max="{{ $tiket->stok }}" value="0"
-                      class="input input-bordered w-16 text-center" data-id="{{ $tiket->id }}" />
+                      class="input input-bordered w-16 text-center" data-id="{{ $tiket->id }}" {{ $tiket->stok < 1 ? 'disabled' : '' }} />
                     <button type="button" class="btn btn-sm btn-outline" data-action="inc" data-id="{{ $tiket->id }}"
-                      aria-label="Tambah satu">+</button>
+                      aria-label="Tambah satu" {{ $tiket->stok < 1 ? 'disabled' : '' }}>+</button>
                   </div>
 
                   <div class="text-sm text-gray-500 mt-2">Subtotal: <span id="subtotal-{{ $tiket->id }}">Rp 0</span>
@@ -116,9 +119,25 @@
       <form method="dialog" class="modal-box">
         <h3 class="font-bold text-lg">Konfirmasi Pembelian</h3>
         <div class="mt-4 space-y-2 text-sm">
-          <div id="modalItems">
-            <p class="text-gray-500">Belum ada item.</p>
-          </div>
+        <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <label for="paymentMethod" class="block text-sm font-semibold text-slate-800">Metode pembayaran</label>
+          <select id="paymentMethod" class="mt-2 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100" {{ $paymentMethods->isEmpty() ? 'disabled' : '' }}>
+            <option value="">Pilih metode pembayaran</option>
+            @foreach($paymentMethods as $paymentMethod)
+              <option value="{{ $paymentMethod->id }}" data-instructions="{{ $paymentMethod->deskripsi }}">{{ $paymentMethod->nama }}</option>
+            @endforeach
+          </select>
+          <p id="paymentInstructions" class="mt-2 text-xs leading-5 text-slate-500">
+            @if($paymentMethods->isEmpty())
+              Metode pembayaran belum tersedia. Silakan hubungi admin.
+            @else
+              Instruksi pembayaran akan ditampilkan setelah memilih metode.
+            @endif
+          </p>
+        </div>
+        <div id="modalItems">
+          <p class="text-gray-500">Belum ada item.</p>
+        </div>
 
           <div class="divider"></div>
           <div class="flex justify-between items-center">
@@ -129,7 +148,7 @@
 
         <div class="modal-action">
           <button class="btn">Tutup</button>
-          <button type="button" class="btn btn-primary px-4 !bg-blue-900 text-white" id="confirmCheckout">Konfirmasi</button>
+          <button type="button" class="btn btn-primary px-4 !bg-blue-900 text-white" id="confirmCheckout" disabled>Konfirmasi</button>
         </div>
       </form>
     </dialog>
@@ -149,7 +168,7 @@
             id: {{ $tiket->id }},
             price: {{ $tiket->harga ?? 0 }},
             stock: {{ $tiket->stok }},
-            tipe: "{{ e($tiket->tipe) }}"
+            tipe: @json($tiket->tipe)
           },
         @endforeach
       };
@@ -158,6 +177,9 @@
     const summaryTotalEl = document.getElementById('summaryTotal');
     const selectedListEl = document.getElementById('selectedList');
     const checkoutButton = document.getElementById('checkoutButton');
+    const paymentMethodEl = document.getElementById('paymentMethod');
+    const paymentInstructionsEl = document.getElementById('paymentInstructions');
+    const confirmCheckoutButton = document.getElementById('confirmCheckout');
 
     function updateSummary() {
       let totalQty = 0;
@@ -180,6 +202,13 @@
       selectedListEl.innerHTML = selectedHtml || '<p class="text-gray-500">Belum ada tiket dipilih</p>';
       checkoutButton.disabled = totalQty === 0;
     }
+
+    paymentMethodEl?.addEventListener('change', () => {
+      const option = paymentMethodEl.selectedOptions[0];
+      paymentInstructionsEl.textContent = option?.dataset.instructions || 'Instruksi pembayaran akan ditampilkan setelah memilih metode.';
+      confirmCheckoutButton.disabled = !paymentMethodEl.value;
+      updateSummary();
+    });
 
     // Wire up plus/minus buttons and manual input
     document.querySelectorAll('[data-action="inc"]').forEach(btn => {
@@ -272,7 +301,14 @@ document.getElementById('confirmCheckout').addEventListener('click', async () =>
       if (items.length === 0) {
         alert('Tidak ada tiket dipilih');
         btn.removeAttribute('disabled');
-        btn.textContent = 'Konfirmasi (placeholder)';
+        btn.textContent = 'Konfirmasi';
+        return;
+      }
+
+      if (!paymentMethodEl?.value) {
+        alert('Pilih metode pembayaran terlebih dahulu.');
+        btn.removeAttribute('disabled');
+        btn.textContent = 'Konfirmasi';
         return;
       }
 
@@ -284,16 +320,21 @@ document.getElementById('confirmCheckout').addEventListener('click', async () =>
             'Accept': 'application/json',
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
           },
-          body: JSON.stringify({ event_id: {{ $event->id }}, items })
+          body: JSON.stringify({
+            event_id: {{ $event->id }},
+            payment_method_id: Number(paymentMethodEl.value),
+            items
+          })
         });
 
         if (!res.ok) {
-          const text = await res.text();
-          throw new Error(text || 'Gagal membuat pesanan');
+          const error = await res.json().catch(() => ({}));
+          const message = error.message || Object.values(error.errors || {}).flat()[0] || 'Gagal membuat pesanan.';
+          throw new Error(message);
         }
 
         const data = await res.json();
-        // redirect to orders list
+        // Redirect to the newly created order.
         window.location.href = data.redirect || '{{ route('orders.index') }}';
       } catch (err) {
         console.log(err);

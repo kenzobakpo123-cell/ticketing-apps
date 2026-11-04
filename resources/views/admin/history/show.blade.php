@@ -38,6 +38,12 @@
                         </span>
                     </div>
                 </div>
+                @if(session('success'))
+                    <div class="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">{{ session('success') }}</div>
+                @endif
+                @if($errors->any())
+                    <div class="mt-5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">{{ $errors->first() }}</div>
+                @endif
             </div>
 
             <!-- Divider dengan gradient -->
@@ -160,7 +166,10 @@
                                             d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
                                             clip-rule="evenodd"></path>
                                     </svg>
-                                    <span class="text-xs text-green-600 font-medium">Terbayar</span>
+                                    <span class="text-xs font-medium
+                                        {{ $order->status === 'paid' ? 'text-green-600' : ($order->status === 'cancelled' ? 'text-slate-500' : 'text-amber-600') }}">
+                                        {{ ['pending' => 'Menunggu pembayaran', 'paid' => 'Lunas', 'cancelled' => 'Dibatalkan'][$order->status] ?? ucfirst($order->status) }}
+                                    </span>
                                 </div>
                             </div>
                             <div class="text-right">
@@ -169,6 +178,36 @@
                             </div>
                         </div>
                     </div>
+
+                    @if($order->user)
+                        <div class="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm">
+                            <div class="font-semibold text-slate-800">Pembeli: {{ $order->user->name }}</div>
+                            <div class="mt-1 text-slate-600">{{ $order->user->email }}</div>
+                        </div>
+                    @endif
+                    <div class="mt-3 rounded-xl border border-blue-100 bg-blue-50 p-4 text-sm">
+                        <div class="font-semibold text-blue-900">Metode pembayaran: {{ $order->payment_method_name ?? $order->tipePembayaran?->nama ?? 'Tidak tersedia' }}</div>
+                        @if($order->payment_instructions)
+                            <p class="mt-2 whitespace-pre-line leading-6 text-blue-800">{{ $order->payment_instructions }}</p>
+                        @endif
+                    </div>
+
+                    @if($order->status === 'pending')
+                        <div class="mt-5 flex flex-wrap justify-end gap-3">
+                            <form method="POST" action="{{ route('admin.histories.status', $order) }}" onsubmit="return confirm('Konfirmasi bahwa pembayaran sudah diterima?')">
+                                @csrf
+                                @method('PATCH')
+                                <input type="hidden" name="status" value="paid">
+                                <button type="submit" class="btn btn-success text-white">Konfirmasi pembayaran</button>
+                            </form>
+                            <form method="POST" action="{{ route('admin.histories.status', $order) }}" onsubmit="return confirm('Batalkan pesanan ini dan kembalikan stok tiket?')">
+                                @csrf
+                                @method('PATCH')
+                                <input type="hidden" name="status" value="cancelled">
+                                <button type="submit" class="btn btn-outline btn-error">Batalkan pesanan</button>
+                            </form>
+                        </div>
+                    @endif
 
                     <!-- Action Button -->
                     <div class="mt-6 flex justify-end">

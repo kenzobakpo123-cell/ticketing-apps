@@ -71,7 +71,7 @@
                         <input type="file" name="gambar" accept="image/*"
                             class="file-input file-input-bordered w-full" />
                         <label class="label">
-                            <span class="label-text-alt">Format: JPG, PNG, max 5MB</span>
+                            <span class="label-text-alt">Format: JPG, PNG, max 2MB</span>
                         </label>
                     </div>
 

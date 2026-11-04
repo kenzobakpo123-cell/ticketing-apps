@@ -2,89 +2,56 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\Tiket;
 use App\Http\Controllers\Controller;
+use App\Models\Tiket;
 use Illuminate\Http\Request;
 
 class TiketController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        $validatedData = request()->validate([
-            'event_id' => 'required|exists:events,id',
-            'tipe' => 'required|string|max:255',
-            'harga' => 'required|numeric|min:0',
-            'stok' => 'required|integer|min:0',
+        $validated = $request->validate([
+            'event_id' => ['required', 'integer', 'exists:events,id'],
+            'tipe' => ['required', 'in:reguler,premium'],
+            'harga' => ['required', 'numeric', 'min:0'],
+            'stok' => ['required', 'integer', 'min:0'],
         ]);
 
-        // Create the ticket
-        Tiket::create($validatedData);
+        Tiket::create($validated);
 
-        return redirect()->route('admin.events.show', $validatedData['event_id'])->with('success', 'Ticket berhasil ditambahkan.');
+        return redirect()
+            ->route('admin.events.show', $validated['event_id'])
+            ->with('success', 'Tiket berhasil ditambahkan.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function update(Request $request, Tiket $ticket)
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        $ticket = Tiket::findOrFail($id);
-
-        $validatedData = $request->validate([
-            'tipe' => 'required|string|max:255',
-            'harga' => 'required|numeric|min:0',
-            'stok' => 'required|integer|min:0',
+        $validated = $request->validate([
+            'tipe' => ['required', 'in:reguler,premium'],
+            'harga' => ['required', 'numeric', 'min:0'],
+            'stok' => ['required', 'integer', 'min:0'],
         ]);
 
-        $ticket->update($validatedData);
+        $ticket->update($validated);
 
-        return redirect()->route('admin.events.show', $ticket->event_id)->with('success', 'Ticket berhasil diperbarui.');
+        return redirect()
+            ->route('admin.events.show', $ticket->event_id)
+            ->with('success', 'Tiket berhasil diperbarui.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function destroy(Tiket $ticket)
     {
-        $ticket = Tiket::findOrFail($id);
+        if ($ticket->detailOrders()->exists()) {
+            return redirect()
+                ->route('admin.events.show', $ticket->event_id)
+                ->withErrors(['ticket' => 'Tiket yang sudah pernah dipesan tidak dapat dihapus agar riwayat transaksi tetap utuh.']);
+        }
+
         $eventId = $ticket->event_id;
         $ticket->delete();
 
-        return redirect()->route('admin.events.show', $eventId)->with('success', 'Ticket berhasil dihapus.');
+        return redirect()
+            ->route('admin.events.show', $eventId)
+            ->with('success', 'Tiket berhasil dihapus.');
     }
 }

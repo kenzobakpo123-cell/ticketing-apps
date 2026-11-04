@@ -32,10 +32,7 @@
                 <!-- Navbar Title/Breadcrumb -->
                 <div class="flex-1 px-4">
                     <div class="flex items-center space-x-2">
-                        <div
-                            class="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center lg:hidden">
-                            <span class="text-white font-bold text-sm">BK</span>
-                        </div>
+                        <img src="{{ asset('assets/images/bengtix-logo.svg') }}" alt="BengTix" class="h-8 w-auto lg:hidden">
                         <h1 class="text-xl font-bold text-gray-800 hidden lg:block">{{ $title ?? 'Admin Dashboard' }}
                         </h1>
                         <h1 class="text-lg font-bold text-gray-800 lg:hidden">{{ $title ?? 'Dashboard' }}</h1>
